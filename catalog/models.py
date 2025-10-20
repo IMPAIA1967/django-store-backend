@@ -3,6 +3,7 @@ from django.db import models
 
 class Category(models.Model):  # ← ИЗМЕНИТЕ Catalog на Category
     """ Модель категории товаров """
+    objects = None
     name = models.CharField(
         max_length=100,
         verbose_name='Наименование',
@@ -28,6 +29,7 @@ class Product(models.Model):
     """
     Модель продукта (товара)
     """
+    objects = None
     name = models.CharField(
         max_length=100,
         verbose_name='Наименование',
