@@ -1,10 +1,8 @@
-# Django
-*.log
-*.pot
-*.pyc
-__pycache__/
-db.sqlite3
-media/
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # Environment
 .env
@@ -12,11 +10,24 @@ media/
 venv/
 env/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Database
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+
+# Static files
+/staticfiles/
+/media/
+
+# Logs
+*.log
 
 # OS
 .DS_Store
