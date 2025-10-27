@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Category(models.Model):  # ← ИЗМЕНИТЕ Catalog на Category
+class Category(models.Model):
     """ Модель категории товаров """
     objects = None
     name = models.CharField(
@@ -49,7 +49,7 @@ class Product(models.Model):
         help_text='Загрузите изображение продукта'
     )
     category = models.ForeignKey(
-        "Category",  # Теперь эта ссылка будет работать
+        "Category",
         on_delete=models.CASCADE,
         verbose_name='Категория',
         help_text='Выберите категорию продукта',
