@@ -2,6 +2,7 @@ from django.db import models
 
 
 class BlogPost(models.Model):
+    objects = None
     title = models.CharField(
         max_length=300,
         verbose_name='Заголовок'

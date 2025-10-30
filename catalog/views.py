@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 
 from .models import Product
 
@@ -9,8 +9,14 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
     template_name = 'catalog/product_detail.html'
 
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        obj.views += 1
+        obj.save(update_fields=['views'])
+        return obj
 
-class HomeView(DetailView):
+
+class HomeView(ListView):
     model = Product
     context_object_name = 'products'
     template_name = 'catalog/home.html'
