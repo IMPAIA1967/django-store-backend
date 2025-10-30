@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Интернет-магазин{% endblock %}
+
+{% block content %}
+<h1>Каталог товаров</h1>
+
+<div class="products-grid">
+    {% for product in products %}
+        <div class="product-card">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 200px; height: auto;">
+            {% else %}
+                <div style="width: 200px; height: 150px; background: #eee; display: flex; align-items: center; justify-content: center;">
+                    Нет изображения
+                </div>
+            {% endif %}
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description|truncatechars:100 }}</p>
+            <p><strong>{{ product.price }} руб.</strong></p>
+            <a href="{% url 'catalog:product_detail' product.pk %}">Подробнее →</a>
+        </div>
+    {% empty %}
+        <p>Товары отсутствуют.</p>
+    {% endfor %}
+</div>
+
+<style>
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+.product-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.product-card img {
+    margin-bottom: 10px;
+}
+</style>
+{% endblock %}
