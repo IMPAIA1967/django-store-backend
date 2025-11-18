@@ -17,6 +17,21 @@
     <p><strong>Описание:</strong></p>
     <p>{{ product.description|default:"Описание отсутствует" }}</p>
     <p><small>Создан: {{ product.created_at|date:"d.m.Y H:i" }}</small></p>
-    <a href="{% url 'catalog:home' %}">← Назад к товарам</a>
+
+    <!-- Кнопки редактирования и удаления (только для владельца или модератора) -->
+    {% if can_edit_or_delete %}
+        <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-warning">Редактировать</a>
+        <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+
+    <!-- Кнопка "Отменить публикацию" (только для модератора) -->
+    {% if can_unpublish %}
+        <form method="post" action="{% url 'catalog:product_unpublish' product.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-info">Отменить публикацию</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'catalog:home' %}" class="btn btn-secondary">← Назад к товарам</a>
 </div>
 {% endblock %}
