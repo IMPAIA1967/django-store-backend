@@ -6,8 +6,13 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .forms import ProductForm
 from .models import Product, Category
-from .services import get_published_products, get_products_by_category, invalidate_published_products_cache, invalidate_category_cache,
 
+from .services import (
+    get_published_products,
+    get_products_by_category,
+    invalidate_published_products_cache,
+    invalidate_category_cache,
+)
 
 
 class ProductDetailView(DetailView):
