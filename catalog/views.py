@@ -5,7 +5,9 @@ from django.views import View
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .forms import ProductForm
-from .models import Product
+from .models import Product, Category
+from .services import get_published_products, get_products_by_category, invalidate_published_products_cache, invalidate_category_cache,
+
 
 
 class ProductDetailView(DetailView):
@@ -41,7 +43,8 @@ class HomeView(ListView):
     template_name = 'catalog/home.html'
 
     def get_queryset(self):
-        return Product.objects.all()
+        # Используем кешированную функцию из services.py
+        return get_published_products()
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
@@ -51,8 +54,9 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        # Сбрасываем кеш списка опубликованных продуктов
+        invalidate_published_products_cache()
         return super().form_valid(form)
-
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
@@ -66,6 +70,16 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
             return Product.objects.all()
         return Product.objects.filter(owner=self.request.user)
 
+    def form_valid(self, form):
+        # Сбрасываем кеш списка опубликованных продуктов
+        invalidate_published_products_cache()
+        # Если изменили категорию — сбрасываем и кеш по категории
+        old_category_id = self.get_object().category_id
+        response = super().form_valid(form)
+        if old_category_id != form.instance.category_id:
+            invalidate_category_cache(old_category_id)
+            invalidate_category_cache(form.instance.category_id)
+        return response
 
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
@@ -78,14 +92,42 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
             return Product.objects.all()
         return Product.objects.filter(owner=self.request.user)
 
+    def delete(self, request, *args, **kwargs):
+        #  Сбрасываем кеш списка опубликованных продуктов
+        invalidate_published_products_cache()
+        #  Сбрасываем кеш по категории
+        product = self.get_object()
+        invalidate_category_cache(product.category_id)
+        return super().delete(request, *args, **kwargs)
+
 class ProductUnpublishView(PermissionRequiredMixin, View):
     permission_required = 'catalog.can_unpublish_product'
 
     def post(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
+        old_category_id = product.category_id
         product.is_published = False
         product.save()
+        # Сбрасываем кеш списка опубликованных продуктов
+        invalidate_published_products_cache()
+        # Сбрасываем кеш по категории
+        invalidate_category_cache(old_category_id)
         return HttpResponseRedirect(reverse_lazy('catalog:product_detail', kwargs={'pk': pk}))
+
+class ProductByCategoryView(ListView):
+    model = Product
+    template_name = 'catalog/products_by_category.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        category_id = self.kwargs['category_id']
+        return get_products_by_category(category_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs['category_id']
+        context['category'] = Category.objects.get(id=category_id)
+        return context
 
 # def product_detail(request, pk):
 #     """Отображает страницу одного товара по его ID (pk)."""
