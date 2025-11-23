@@ -1,7 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth import get_user_model
 
 
-class Category(models.Model):  # ← ИЗМЕНИТЕ Catalog на Category
+User = get_user_model()
+
+class Category(models.Model):
     """ Модель категории товаров """
     objects = None
     name = models.CharField(
@@ -49,7 +53,7 @@ class Product(models.Model):
         help_text='Загрузите изображение продукта'
     )
     category = models.ForeignKey(
-        "Category",  # Теперь эта ссылка будет работать
+        "Category",
         on_delete=models.CASCADE,
         verbose_name='Категория',
         help_text='Выберите категорию продукта',
@@ -69,11 +73,33 @@ class Product(models.Model):
         auto_now=True,
         verbose_name='Дата последнего изменения'
     )
+    views = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Количество просмотров'
+    )
+
+    is_published = models.BooleanField(
+        default=False,
+        verbose_name='Опубликовано',
+        help_text='Отметьте, если товар должен отображаться в каталоге'
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Владелец',
+        null=True,
+        blank=True,
+        help_text='Пользователь, создавший товар'
+    )
 
     class Meta:
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
         ordering = ['name', 'category']
+        permissions = [
+            ("can_unpublish_product", "Может отменять публикацию продукта"),
+        ]
 
     def __str__(self):
         return self.name
